@@ -26,14 +26,14 @@ class ViewController: UIViewController {
         progressBar.progress = 0.0
         titleLabel.text = hardness
         secondsPassed = 0
-        
+        debugPrint(secondsPassed)
         
         timer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(countDownTimer), userInfo: nil, repeats: true)
         
     }
     
     @objc func countDownTimer(){
-        
+        debugPrint("count down started")
         if secondsPassed<totalTime {
             secondsPassed+=1
             progressBar.progress = (Float(secondsPassed)/Float(totalTime))

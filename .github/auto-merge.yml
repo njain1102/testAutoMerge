@@ -1,9 +1,3 @@
-updateBranch: true
-deleteBranchAfterMerge: true
-reportStatus: true
-
-rules:
-- minApprovals:
-    MEMBER: 1
-
-mergeCommitMessage: "{title} (#{number})"
+minApprovals:
+    COLLABORATOR: 1
+mergeMethod: squash
