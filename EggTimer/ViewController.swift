@@ -33,7 +33,6 @@ class ViewController: UIViewController {
     }
     
     @objc func countDownTimer(){
-        debugPrint("count down started")
         if secondsPassed<totalTime {
             secondsPassed+=1
             progressBar.progress = (Float(secondsPassed)/Float(totalTime))
