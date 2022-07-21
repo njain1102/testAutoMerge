@@ -3,7 +3,7 @@ deleteBranchAfterMerge: true
 reportStatus: true
 
 minApprovals:
-  COLLABORATOR: 0
+  COLLABORATOR: 1
 maxRequestedChanges:
   NONE: 0
 blockingLabels:
@@ -11,8 +11,6 @@ blockingLabels:
 
 rules:
 - minApprovals:
-    OWNER: 2
-- requiredLabels:
-  - merge
+    OWNER: 1
 
 mergeCommitMessage: "{title} (#{number})"
