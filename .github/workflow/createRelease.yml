@@ -1,0 +1,59 @@
+# This workflow will build a Swift project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-swift
+
+name: Create Release on Merge
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  create-release:
+    if: startsWith(github.event.before, 'release/')
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Fetch full history for changelog generation
+      - name: Fetch all history
+        run: git fetch --prune --unshallow --tags
+
+      # Generate Release Notes
+      - name: Generate Release Notes
+        id: generate_notes
+        run: |
+          RELEASE_BRANCH="${{ github.event.before }}"
+          COMMITS=$(git log --pretty=format:"%h %s (%an)" $RELEASE_BRANCH..HEAD)
+          PRS=$(git log --pretty=format:"%h %s (%an)" $RELEASE_BRANCH..HEAD | grep "Merge pull request" | sed 's/Merge pull request #\([0-9]*\).*/PR #\1/' | uniq)
+          CONTRIBUTORS=$(git log --pretty=format:"%an" $RELEASE_BRANCH..HEAD | sort | uniq)
+
+          echo "### What's Changed" > release-notes.md
+          echo "$COMMITS" >> release-notes.md
+          echo "" >> release-notes.md
+          echo "### Contributors" >> release-notes.md
+          echo "$CONTRIBUTORS" >> release-notes.md
+          echo "" >> release-notes.md
+          echo "### Full Changelog" >> release-notes.md
+          echo "https://github.com/${{ github.repository }}/compare/$RELEASE_BRANCH...master" >> release-notes.md
+
+      # Publish Release
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.sha }}
+          release_name: "Release for ${{ github.sha }}"
+          body_path: ./release-notes.md
+          draft: false
+          prerelease: false
+
+      # Upload artifacts for debugging (Optional)
+      - name: Upload Release Notes
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-notes
+          path: release-notes.md
+
