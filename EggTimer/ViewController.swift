@@ -9,7 +9,7 @@
 import UIKit
 
 class ViewController: UIViewController {
-    // test comment
+    // test comment added
     @IBOutlet weak var progressBar: UIProgressView!
     @IBOutlet weak var titleLabel: UILabel!
     let eggTimer = ["Soft" : 3, "Medium": 4, "Hard": 7]
