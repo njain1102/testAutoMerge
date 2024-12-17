@@ -22,7 +22,7 @@ jobs:
       - name: Determine Version and Previous Tag
         id: version
         run: |
-          VERSION=$(git log -1 --pretty=%B | grep -oP 'release/\K.*')
+          VERSION=$(git log -1 --pretty=%B | awk '{print $2}')
           PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ || echo "none")
           echo "version=$VERSION" >> $GITHUB_ENV
           echo "prev_tag=$PREV_TAG" >> $GITHUB_ENV
