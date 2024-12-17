@@ -10,7 +10,7 @@ on:
 
 jobs:
   create-release:
-    if: startsWith(github.event.before, 'release/')
+    # if: startsWith(github.event.before, 'release/')
     runs-on: ubuntu-latest
 
     steps:
