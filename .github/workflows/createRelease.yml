@@ -1,7 +1,4 @@
-# This workflow will build a Swift project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-swift
-
-name: Create Release on Merge
+name: Publish Release
 
 on:
   push:
@@ -9,50 +6,64 @@ on:
       - develop
 
 jobs:
-  create-release:
-    # if: startsWith(github.event.before, 'release/')
+  publish-release:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository
+      # Step 1: Check out the repository
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Fetch full history for changelog generation
-      - name: Fetch all history
-        run: git fetch --prune --unshallow --tags
+      # Step 2: Fetch tags to compare commits
+      - name: Fetch all commits and tags
+        run: git fetch --tags --prune --unshallow
 
-      # Generate Release Notes
-      - name: Generate Release Notes
-        id: generate_notes
+      # Step 3: Determine release version and previous tag
+      - name: Determine Version and Previous Tag
+        id: version
         run: |
-          RELEASE_BRANCH="${{ github.event.before }}"
-          COMMITS=$(git log --pretty=format:"%h %s (%an)" $RELEASE_BRANCH..HEAD)
-          PRS=$(git log --pretty=format:"%h %s (%an)" $RELEASE_BRANCH..HEAD | grep "Merge pull request" | sed 's/Merge pull request #\([0-9]*\).*/PR #\1/' | uniq)
-          CONTRIBUTORS=$(git log --pretty=format:"%an" $RELEASE_BRANCH..HEAD | sort | uniq)
+          VERSION=$(git log -1 --pretty=%B | grep -oP 'release/\K.*')
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ || echo "none")
+          echo "version=$VERSION" >> $GITHUB_ENV
+          echo "prev_tag=$PREV_TAG" >> $GITHUB_ENV
 
-          echo "### What's Changed" > release-notes.md
-          echo "$COMMITS" >> release-notes.md
-          echo "" >> release-notes.md
-          echo "### Contributors" >> release-notes.md
-          echo "$CONTRIBUTORS" >> release-notes.md
-          echo "" >> release-notes.md
-          echo "### Full Changelog" >> release-notes.md
-          echo "https://github.com/${{ github.repository }}/compare/$RELEASE_BRANCH...master" >> release-notes.md
+      # Step 4: Generate release notes
+      - name: Generate Release Notes
+        id: release_notes
+        run: |
+          # Prepare What's Changed
+          if [ "$PREV_TAG" != "none" ]; then
+            COMMITS=$(git log $PREV_TAG..HEAD --pretty=format:"- %s (by %an) in PR #%h")
+          else
+            COMMITS=$(git log --pretty=format:"- %s (by %an) in PR #%h")
+          fi
 
-      # Publish Release
-      - name: Create GitHub Release
-        uses: actions/create-release@v1
-        with:
-          tag_name: ${{ github.sha }}
-          release_name: "Release for ${{ github.sha }}"
-          body_path: ./release-notes.md
-          draft: false
-          prerelease: false
+          # Prepare Contributors
+          CONTRIBUTORS=$(git log $PREV_TAG..HEAD --pretty=format:"%an <%ae>" | sort | uniq)
 
-      # Upload artifacts for debugging (Optional)
-      - name: Upload Release Notes
-        uses: actions/upload-artifact@v3
-        with:
-          name: release-notes
-          path: release-notes.md
+          # Prepare Full Changelog Link
+          if [ "$PREV_TAG" != "none" ]; then
+            CHANGELOG="[Full Changelog](https://github.com/${{ github.repository }}/compare/$PREV_TAG...master)"
+          else
+            CHANGELOG="[Full Changelog](https://github.com/${{ github.repository }}/commits/master)"
+          fi
+
+          # Save release notes
+          echo "## What's Changed" > release_notes.md
+          echo "$COMMITS" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "## Contributors" >> release_notes.md
+          echo "$CONTRIBUTORS" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "## Full Changelog" >> release_notes.md
+          echo "$CHANGELOG" >> release_notes.md
+
+      # Step 5: Create GitHub Release
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ env.version }}" \
+            --title "Release v${{ env.version }}" \
+            --notes-file release_notes.md \
+            --target master
