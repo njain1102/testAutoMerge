@@ -53,13 +53,13 @@ jobs:
 
           # Prepare Full Changelog Link
           if [ "$PREV_TAG" != "none" ]; then
-            CHANGELOG="[Full Changelog](https://github.com/${{ github.repository }}/compare/$PREV_TAG...master)"
+            CHANGELOG="[Full Changelog](https://github.com/${{ github.repository }}/compare/$PREV_TAG...develop)"
           else
-            CHANGELOG="[Full Changelog](https://github.com/${{ github.repository }}/commits/master)"
+            CHANGELOG="[Full Changelog](https://github.com/${{ github.repository }}/commits/develop)"
           fi
 
           # Save release notes
-          echo "## What's Changed" > release_notes.md
+          echo "## What's Changed" >> release_notes.md
           echo "$COMMITS" >> release_notes.md
           echo "" >> release_notes.md
           echo "## Contributors" >> release_notes.md
