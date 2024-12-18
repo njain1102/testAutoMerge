@@ -50,16 +50,16 @@ jobs:
 
           # Prepare Contributors
           if [ $PREV_TAG != none ]; then
-            CONTRIBUTORS=$(git log $PREV_TAG..HEAD --pretty=format:"%an <%ae>" | sort | uniq)
+            CONTRIBUTORS=$(git log $PREV_TAG..HEAD --pretty=format:"%an" | sort | uniq)
           else
-            CONTRIBUTORS=$(git log HEAD --pretty=format:"%an <%ae>" | sort | uniq)
+            CONTRIBUTORS=$(git log HEAD --pretty=format:"%an" | sort | uniq)
           fi
 
           # Prepare Full Changelog Link
           if [ $PREV_TAG != none ]; then
             CHANGELOG="$PREV_TAG...${{ env.version }}(https://github.com/${{ github.repository }}/compare/$PREV_TAG...${{ env.version }})"
           else
-            CHANGELOG="${{ env.version }}[Full Changelog](https://github.com/${{ github.repository }}/commits/${{ env.version }})"
+            CHANGELOG="${{ env.version }}(https://github.com/${{ github.repository }}/commits/${{ env.version }})"
           fi
 
           # Save release notes
@@ -78,6 +78,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # GitHub API Token
         run: |
           gh release create ${{ env.version }} \
-            --title "Release ${{ env.version }}" \
+            --title "${{ env.version }}" \
             --notes-file release_notes.md \
             --target develop
