@@ -42,7 +42,7 @@ jobs:
         id: release_notes
         run: |
           # Prepare What's Changed
-          if [ "$PREV_TAG" != "none" ]; then
+          if [ $PREV_TAG != none ]; then
             echo "tag found"
             COMMITS=$(git log $PREV_TAG..HEAD --pretty=format:"- %s (by %an) in PR #%h")
           else
