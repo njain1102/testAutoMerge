@@ -51,12 +51,9 @@ jobs:
           fi
 
           # Prepare Contributors
-          
-          if [ $CONTRIBUTORS != none ]; then
-            echo "contributor found"
+          if [ $PREV_TAG != none ]; then
             CONTRIBUTORS=$(git log $PREV_TAG..HEAD --pretty=format:"%an <%ae>" | sort | uniq)
           else
-            echo "no contributor found"
             CONTRIBUTORS=$(git log HEAD --pretty=format:"%an <%ae>" | sort | uniq)
           fi
 
