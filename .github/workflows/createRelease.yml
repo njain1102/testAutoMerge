@@ -6,98 +6,74 @@ on:
       - develop
 
 jobs:
-  release:
+  publish-release:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Build project
+      # Step 1: Check out the repository
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Fetch all commits and tags
+      - name: Fetch all commits and tags
+        run: git fetch --tags --prune --unshallow
+
+      # Step 3: Extract version from the latest commit
+      - name: Extract Version
+        id: version
         run: |
-          zip --junk-paths my-artifact README.md
+          VERSION=$(git log -1 --pretty=%B | grep -oP '(?<=release/)[0-9]+\.[0-9]+\.[0-9]+')
+          if [ -z "$VERSION" ]; then
+            echo "Error: No version found in the last commit message."
+            exit 1
+          fi
+          echo "version=$VERSION" >> $GITHUB_ENV
+          echo "Extracted version: $VERSION"
+
+      # Step 4: Determine the previous tag
+      - name: Determine Previous Tag
+        id: previous_tag
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ || echo "none")
+          echo "prev_tag=$PREV_TAG" >> $GITHUB_ENV
+
+      # Step 5: Generate release notes
+      - name: Generate Release Notes
+        id: release_notes
+        run: |
+          # Prepare What's Changed
+          if [ "$PREV_TAG" != "none" ]; then
+            COMMITS=$(git log $PREV_TAG..HEAD --pretty=format:"- %s (by %an) in PR #%h")
+          else
+            COMMITS=$(git log --pretty=format:"- %s (by %an) in PR #%h")
+          fi
+
+          # Prepare Contributors
+          CONTRIBUTORS=$(git log $PREV_TAG..HEAD --pretty=format:"%an <%ae>" | sort | uniq)
+
+          # Prepare Full Changelog Link
+          if [ "$PREV_TAG" != "none" ]; then
+            CHANGELOG="[Full Changelog](https://github.com/${{ github.repository }}/compare/$PREV_TAG...master)"
+          else
+            CHANGELOG="[Full Changelog](https://github.com/${{ github.repository }}/commits/master)"
+          fi
+
+          # Save release notes
+          echo "## What's Changed" > release_notes.md
+          echo "$COMMITS" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "## Contributors" >> release_notes.md
+          echo "$CONTRIBUTORS" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "## Full Changelog" >> release_notes.md
+          echo "$CHANGELOG" >> release_notes.md
+
+      # Step 6: Create GitHub Release
       - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: 8.28.10
-          release_name: Release 8.28.10
-          draft: true
-          prerelease: false
-      # - name: Upload Release Asset
-      #   id: upload-release-asset 
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-      #     asset_path: ./my-artifact.zip
-      #     asset_name: my-artifact.zip
-      #     asset_content_type: application/zip
-      - uses: eregon/publish-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          release_id: ${{ steps.create_release.outputs.id }}
-# jobs:
-#   publish-release:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       # Step 1: Check out the repository
-#       - name: Checkout Code
-#         uses: actions/checkout@v3
-
-#       # Step 2: Fetch tags to compare commits
-#       - name: Fetch all commits and tags
-#         run: git fetch --tags --prune --unshallow
-
-#       # Step 3: Determine release version and previous tag
-#       - name: Determine Version and Previous Tag
-#         id: version
-#         run: |
-#           VERSION=$(git log -1 --pretty=%B | awk '{print $2}')
-#           PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ || echo "none")
-#           echo "version=$VERSION" >> $GITHUB_ENV
-#           echo "prev_tag=$PREV_TAG" >> $GITHUB_ENV
-
-#       # Step 4: Generate release notes
-#       - name: Generate Release Notes
-#         id: release_notes
-#         run: |
-#           # Prepare What's Changed
-#           if [ "$PREV_TAG" != "none" ]; then
-#             COMMITS=$(git log $PREV_TAG..HEAD --pretty=format:"- %s (by %an) in PR #%h")
-#           else
-#             COMMITS=$(git log --pretty=format:"- %s (by %an) in PR #%h")
-#           fi
-
-#           # Prepare Contributors
-#           CONTRIBUTORS=$(git log $PREV_TAG..HEAD --pretty=format:"%an <%ae>" | sort | uniq)
-
-#           # Prepare Full Changelog Link
-#           if [ "$PREV_TAG" != "none" ]; then
-#             CHANGELOG="[Full Changelog](https://github.com/${{ github.repository }}/compare/$PREV_TAG...master)"
-#           else
-#             CHANGELOG="[Full Changelog](https://github.com/${{ github.repository }}/commits/master)"
-#           fi
-
-#           # Save release notes
-#           echo "## What's Changed" > release_notes.md
-#           echo "$COMMITS" >> release_notes.md
-#           echo "" >> release_notes.md
-#           echo "## Contributors" >> release_notes.md
-#           echo "$CONTRIBUTORS" >> release_notes.md
-#           echo "" >> release_notes.md
-#           echo "## Full Changelog" >> release_notes.md
-#           echo "$CHANGELOG" >> release_notes.md
-
-#       # Step 5: Create GitHub Release
-#       - name: Create Release
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         run: |
-#           gh release create "v${{ env.version }}" \
-#             --title "Release v${{ env.version }}" \
-#             --notes-file release_notes.md \
-#             --target master
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # GitHub API Token
+        run: |
+          gh release create "v${{ env.version }}" \
+            --title "Release v${{ env.version }}" \
+            --notes-file release_notes.md \
+            --target master
