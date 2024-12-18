@@ -49,9 +49,13 @@ jobs:
             echo "tag not found"
             COMMITS=$(git log --pretty=format:"- %s (by %an) in PR #%h")
           fi
+          echo ${{ COMMITS }}
 
           # Prepare Contributors
           CONTRIBUTORS=$(git log $PREV_TAG..HEAD --pretty=format:"%an <%ae>" | sort | uniq)
+          if [ "$CONTRIBUTORS" == "none" ]; then
+            echo "no contributor found"
+          fi
 
           # Prepare Full Changelog Link
           if [ "$PREV_TAG" != "none" ]; then
