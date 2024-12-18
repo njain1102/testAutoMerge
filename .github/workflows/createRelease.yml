@@ -6,64 +6,93 @@ on:
       - develop
 
 jobs:
-  publish-release:
+  release:
     runs-on: ubuntu-latest
-
     steps:
-      # Step 1: Check out the repository
-      - name: Checkout Code
-        uses: actions/checkout@v3
+    - name: Create Draft Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: <tofill>
+        release_name: <tofill>
+        draft: true
+        prerelease: false
 
-      # Step 2: Fetch tags to compare commits
-      - name: Fetch all commits and tags
-        run: git fetch --tags --prune --unshallow
+    - uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./my-artifact.zip
+        asset_name: my-artifact.zip
+        asset_content_type: application/zip
 
-      # Step 3: Determine release version and previous tag
-      - name: Determine Version and Previous Tag
-        id: version
-        run: |
-          VERSION=$(git log -1 --pretty=%B | awk '{print $2}')
-          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ || echo "none")
-          echo "version=$VERSION" >> $GITHUB_ENV
-          echo "prev_tag=$PREV_TAG" >> $GITHUB_ENV
+    - uses: eregon/publish-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        release_id: ${{ steps.create_release.outputs.id }}
+# jobs:
+#   publish-release:
+#     runs-on: ubuntu-latest
 
-      # Step 4: Generate release notes
-      - name: Generate Release Notes
-        id: release_notes
-        run: |
-          # Prepare What's Changed
-          if [ "$PREV_TAG" != "none" ]; then
-            COMMITS=$(git log $PREV_TAG..HEAD --pretty=format:"- %s (by %an) in PR #%h")
-          else
-            COMMITS=$(git log --pretty=format:"- %s (by %an) in PR #%h")
-          fi
+#     steps:
+#       # Step 1: Check out the repository
+#       - name: Checkout Code
+#         uses: actions/checkout@v3
 
-          # Prepare Contributors
-          CONTRIBUTORS=$(git log $PREV_TAG..HEAD --pretty=format:"%an <%ae>" | sort | uniq)
+#       # Step 2: Fetch tags to compare commits
+#       - name: Fetch all commits and tags
+#         run: git fetch --tags --prune --unshallow
 
-          # Prepare Full Changelog Link
-          if [ "$PREV_TAG" != "none" ]; then
-            CHANGELOG="[Full Changelog](https://github.com/${{ github.repository }}/compare/$PREV_TAG...master)"
-          else
-            CHANGELOG="[Full Changelog](https://github.com/${{ github.repository }}/commits/master)"
-          fi
+#       # Step 3: Determine release version and previous tag
+#       - name: Determine Version and Previous Tag
+#         id: version
+#         run: |
+#           VERSION=$(git log -1 --pretty=%B | awk '{print $2}')
+#           PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ || echo "none")
+#           echo "version=$VERSION" >> $GITHUB_ENV
+#           echo "prev_tag=$PREV_TAG" >> $GITHUB_ENV
 
-          # Save release notes
-          echo "## What's Changed" > release_notes.md
-          echo "$COMMITS" >> release_notes.md
-          echo "" >> release_notes.md
-          echo "## Contributors" >> release_notes.md
-          echo "$CONTRIBUTORS" >> release_notes.md
-          echo "" >> release_notes.md
-          echo "## Full Changelog" >> release_notes.md
-          echo "$CHANGELOG" >> release_notes.md
+#       # Step 4: Generate release notes
+#       - name: Generate Release Notes
+#         id: release_notes
+#         run: |
+#           # Prepare What's Changed
+#           if [ "$PREV_TAG" != "none" ]; then
+#             COMMITS=$(git log $PREV_TAG..HEAD --pretty=format:"- %s (by %an) in PR #%h")
+#           else
+#             COMMITS=$(git log --pretty=format:"- %s (by %an) in PR #%h")
+#           fi
 
-      # Step 5: Create GitHub Release
-      - name: Create Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release create "v${{ env.version }}" \
-            --title "Release v${{ env.version }}" \
-            --notes-file release_notes.md \
-            --target master
+#           # Prepare Contributors
+#           CONTRIBUTORS=$(git log $PREV_TAG..HEAD --pretty=format:"%an <%ae>" | sort | uniq)
+
+#           # Prepare Full Changelog Link
+#           if [ "$PREV_TAG" != "none" ]; then
+#             CHANGELOG="[Full Changelog](https://github.com/${{ github.repository }}/compare/$PREV_TAG...master)"
+#           else
+#             CHANGELOG="[Full Changelog](https://github.com/${{ github.repository }}/commits/master)"
+#           fi
+
+#           # Save release notes
+#           echo "## What's Changed" > release_notes.md
+#           echo "$COMMITS" >> release_notes.md
+#           echo "" >> release_notes.md
+#           echo "## Contributors" >> release_notes.md
+#           echo "$CONTRIBUTORS" >> release_notes.md
+#           echo "" >> release_notes.md
+#           echo "## Full Changelog" >> release_notes.md
+#           echo "$CHANGELOG" >> release_notes.md
+
+#       # Step 5: Create GitHub Release
+#       - name: Create Release
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         run: |
+#           gh release create "v${{ env.version }}" \
+#             --title "Release v${{ env.version }}" \
+#             --notes-file release_notes.md \
+#             --target master
