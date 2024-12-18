@@ -15,11 +15,9 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag: v8.32.9
-        generateReleaseNotes: true
+        tag_name: "v8.32.9"
         draft: true
         prerelease: false
-        makeLatest: "latest"
 
     - uses: actions/upload-release-asset@v1.0.1
       env:
