@@ -73,7 +73,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # GitHub API Token
         run: |
-          gh release create "v${{ env.version }}" \
+          gh release create v${{ env.version }} \
             --title "Release v${{ env.version }}" \
             --notes-file release_notes.md \
-            --target master
+            --target develop
