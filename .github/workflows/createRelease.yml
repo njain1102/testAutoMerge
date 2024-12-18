@@ -51,13 +51,17 @@ jobs:
           fi
 
           # Prepare Contributors
-          CONTRIBUTORS=$(git log $PREV_TAG..HEAD --pretty=format:"%an <%ae>" | sort | uniq)
-          if [ "$CONTRIBUTORS" == "none" ]; then
+          
+          if [ $CONTRIBUTORS != none ]; then
+            echo "contributor found"
+            CONTRIBUTORS=$(git log $PREV_TAG..HEAD --pretty=format:"%an <%ae>" | sort | uniq)
+          else
             echo "no contributor found"
+            CONTRIBUTORS=$(git log HEAD --pretty=format:"%an <%ae>" | sort | uniq)
           fi
 
           # Prepare Full Changelog Link
-          if [ "$PREV_TAG" != "none" ]; then
+          if [ $PREV_TAG != none ]; then
             CHANGELOG="[Full Changelog](https://github.com/${{ github.repository }}/compare/$PREV_TAG...develop)"
           else
             CHANGELOG="[Full Changelog](https://github.com/${{ github.repository }}/commits/develop)"
