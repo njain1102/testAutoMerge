@@ -27,7 +27,7 @@ jobs:
             echo "Error: No version found in the last commit message."
             exit 1
           fi
-          echo "version=$VERSION" >> $GITHUB_ENV
+          echo "version=v$VERSION" >> $GITHUB_ENV
           echo "Extracted version: $VERSION"
 
       # Step 4: Determine the previous tag
