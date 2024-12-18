@@ -43,8 +43,10 @@ jobs:
         run: |
           # Prepare What's Changed
           if [ "$PREV_TAG" != "none" ]; then
+            echo "tag found"
             COMMITS=$(git log $PREV_TAG..HEAD --pretty=format:"- %s (by %an) in PR #%h")
           else
+            echo "tag not found"
             COMMITS=$(git log --pretty=format:"- %s (by %an) in PR #%h")
           fi
 
