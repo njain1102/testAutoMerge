@@ -44,21 +44,21 @@ jobs:
           # Prepare What's Changed
           if [ "$PREV_TAG" != "none" ]; then
             echo "tag found"
-            COMMITS=$(git log HEAD..$PREV_TAG --pretty=format:"- %s (by %an) in PR #%h")
+            COMMITS=$(git log $PREV_TAG..HEAD --pretty=format:"- %s (by %an) in PR #%h")
           else
             echo "tag not found"
             COMMITS=$(git log --pretty=format:"- %s (by %an) in PR #%h")
           fi
 
           # Prepare Contributors
-          CONTRIBUTORS=$(git log HEAD..$PREV_TAG --pretty=format:"%an <%ae>" | sort | uniq)
+          CONTRIBUTORS=$(git log $PREV_TAG..HEAD --pretty=format:"%an <%ae>" | sort | uniq)
           if [ "$CONTRIBUTORS" == "none" ]; then
             echo "no contributor found"
           fi
 
           # Prepare Full Changelog Link
           if [ "$PREV_TAG" != "none" ]; then
-            CHANGELOG="[Full Changelog](https://github.com/${{ github.repository }}/compare/develop...$PREV_TAG)"
+            CHANGELOG="[Full Changelog](https://github.com/${{ github.repository }}/compare/$PREV_TAG...develop)"
           else
             CHANGELOG="[Full Changelog](https://github.com/${{ github.repository }}/commits/develop)"
           fi
