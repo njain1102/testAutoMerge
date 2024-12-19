@@ -50,9 +50,9 @@ jobs:
 
           # Prepare Contributors
           if [ $PREV_TAG != none ]; then
-            CONTRIBUTORS=$(git log $PREV_TAG..HEAD --pretty=format:"[%an](%ae)" | sort | uniq)
+            CONTRIBUTORS=$(git log $PREV_TAG..HEAD --pretty=format:"%an (%ae)" | sort | uniq)
           else
-            CONTRIBUTORS=$(git log HEAD --pretty=format:"[%an](%ae)" | sort | uniq)
+            CONTRIBUTORS=$(git log HEAD --pretty=format:"%an (%ae)" | sort | uniq)
           fi
 
           # Prepare Full Changelog Link
