@@ -50,16 +50,16 @@ jobs:
 
           # Prepare Contributors
           if [ $PREV_TAG != none ]; then
-            CONTRIBUTORS=$(git log $PREV_TAG..HEAD --pretty=format:"%an" | sort | uniq)
+            CONTRIBUTORS=$(git log $PREV_TAG..HEAD --pretty=format:"[%an](%ae)" | sort | uniq)
           else
-            CONTRIBUTORS=$(git log HEAD --pretty=format:"%an" | sort | uniq)
+            CONTRIBUTORS=$(git log HEAD --pretty=format:"[%an](%ae)" | sort | uniq)
           fi
 
           # Prepare Full Changelog Link
           if [ $PREV_TAG != none ]; then
-            CHANGELOG="$PREV_TAG...${{ env.version }}(https://github.com/${{ github.repository }}/compare/$PREV_TAG...${{ env.version }})"
+            CHANGELOG="[$PREV_TAG...${{ env.version }}](https://github.com/${{ github.repository }}/compare/$PREV_TAG...${{ env.version }})"
           else
-            CHANGELOG="${{ env.version }}(https://github.com/${{ github.repository }}/commits/${{ env.version }})"
+            CHANGELOG="[${{ env.version }}](https://github.com/${{ github.repository }}/commits/${{ env.version }})"
           fi
 
           # Save release notes
