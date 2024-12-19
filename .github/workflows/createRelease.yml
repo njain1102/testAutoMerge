@@ -48,19 +48,19 @@ jobs:
             COMMITS=$(git log --pretty=format:"- %s (by %an) in PR #%h")
           fi
 
-          # # Prepare Contributors
-          # if [ $PREV_TAG != none ]; then
-          #   CONTRIBUTORS=$(git log $PREV_TAG..HEAD --pretty=format:"%an (%ae)" | sort | uniq)
-          # else
-          #   CONTRIBUTORS=$(git log HEAD --pretty=format:"%an (%ae)" | sort | uniq)
-          # fi
+          # Prepare Contributors
+          if [ $PREV_TAG != none ]; then
+            CONTRIBUTORS=$(git log $PREV_TAG..HEAD --pretty=format:"%an (%ae)" | sort | uniq)
+          else
+            CONTRIBUTORS=$(git log HEAD --pretty=format:"%an (%ae)" | sort | uniq)
+          fi
 
-          CONTRIBUTORS=$(git log HEAD --pretty=format:'%ae' | sort | uniq | while read -r email; do
-            username=$(gh api search/users -q "email:${email}" --jq '.items[0].login' || echo "Unknown")
-            if [ "$username" != "Unknown" ]; then
-              echo "- [$username](https://github.com/$username)"
-            fi
-          done)
+          # CONTRIBUTORS=$(git log HEAD --pretty=format:'%ae' | sort | uniq | while read -r email; do
+          #   username=$(gh api search/users -q "email:${email}" --jq '.items[0].login' || echo "Unknown")
+          #   if [ "$username" != "Unknown" ]; then
+          #     echo "- [$username](https://github.com/$username)"
+          #   fi
+          # done)
 
           # Prepare Full Changelog Link
           if [ $PREV_TAG != none ]; then
