@@ -60,7 +60,7 @@ jobs:
             if [ "$username" != "Unknown" ]; then
               echo "- [$username](https://github.com/$username)"
             fi
-          done
+          done)
 
           # Prepare Full Changelog Link
           if [ $PREV_TAG != none ]; then
