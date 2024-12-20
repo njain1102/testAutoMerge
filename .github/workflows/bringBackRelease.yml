@@ -36,14 +36,29 @@ jobs:
           git checkout -b "adhoc/bring_back_${{ env.version }}"  # Creates a new branch named version/<versionNumber> based on the master branch.
           git push origin "adhoc/bring_back_${{ env.version }}"  # Pushes the newly created branch to the remote repository.
 
-      # Step 4: Create Pull Request to staging branch
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}  # Uses the GitHub-provided token to authenticate the pull request action.
-          base: staging  # Specifies the base branch for the pull request (the branch into which changes will be merged).
-          branch: "adhoc/bring_back_${{ env.version }}"  # Specifies the source branch for the pull request (the newly created version branch).
-          title: "Bring Back ${{ env.version }}"  # Sets the title of the pull request.
-          body: |
-           Bring Back ${{ env.version }}.  # Provides a description of the pull request.
+      # Step 4: Create a PR to the staging branch using GitHub API
+      - name: Create pull request to staging branch
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -d @- https://api.github.com/repos/${{ github.repository }}/pulls <<EOF
+          {
+            "title": "Release version ${{ env.VERSION }} to staging",
+            "head": "adhoc/bring_back_${{ env.version }}",
+            "base": "staging",
+            "body": "This PR is automatically created from the release branch ${{ github.ref }}."
+          }
+          EOF
+
+      # # Step 4: Create Pull Request to staging branch
+      # - name: Create Pull Request
+      #   uses: peter-evans/create-pull-request@v5
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}  # Uses the GitHub-provided token to authenticate the pull request action.
+      #     base: staging  # Specifies the base branch for the pull request (the branch into which changes will be merged).
+      #     branch: "adhoc/bring_back_${{ env.version }}"  # Specifies the source branch for the pull request (the newly created version branch).
+      #     title: "Bring Back ${{ env.version }}"  # Sets the title of the pull request.
+      #     body: |
+      #      Bring Back ${{ env.version }}.  # Provides a description of the pull request.
         # This step uses the `peter-evans/create-pull-request` action to automate the creation of a pull request.
