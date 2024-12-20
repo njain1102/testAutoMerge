@@ -42,6 +42,8 @@ jobs:
       # Step 5: Generate release notes
       - name: Generate Release Notes
         id: release_notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Prepare What's Changed
           if [ $PREV_TAG != none ]; then
@@ -56,13 +58,6 @@ jobs:
           else
             CONTRIBUTORS=$(git log HEAD --pretty=format:"%an (%ae)" | sort | uniq)
           fi
-
-          # CONTRIBUTORS=$(git log HEAD --pretty=format:'%ae' | sort | uniq | while read -r email; do
-          #   username=$(gh api search/users -q "email:${email}" --jq '.items[0].login' || echo "Unknown")
-          #   if [ "$username" != "Unknown" ]; then
-          #     echo "- [$username](https://github.com/$username)"
-          #   fi
-          # done)
 
           # Prepare Full Changelog Link
           if [ $PREV_TAG != none ]; then
