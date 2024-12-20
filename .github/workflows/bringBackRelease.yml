@@ -30,7 +30,7 @@ jobs:
         run: |
           git config user.name "namanjain-tul-luxury"  # Configures the Git username to identify the actions bot as the committer.
           git config user.email "njain2@tataunistore.com"  # Configures the Git email to identify the actions bot as the committer.
-          git checkout master  # Switches to the master branch.
+          git checkout develop  # Switches to the master branch.
           git pull  # Ensures the local master branch is up-to-date with the remote repository.
           git checkout -b "version/$VERSION"  # Creates a new branch named version/<versionNumber> based on the master branch.
           git push origin "version/$VERSION"  # Pushes the newly created branch to the remote repository.
@@ -41,8 +41,8 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}  # Uses the GitHub-provided token to authenticate the pull request action.
           base: staging  # Specifies the base branch for the pull request (the branch into which changes will be merged).
-          head: "adhoc/bring_back_${{ env.version }}"  # Specifies the source branch for the pull request (the newly created version branch).
-          title: "Bring Back ${{ env.version }}"  # Sets the title of the pull request.
+          head: "adhoc/bring_back_$VERSION"  # Specifies the source branch for the pull request (the newly created version branch).
+          title: "Bring Back $VERSION"  # Sets the title of the pull request.
           body: |
-           Bring Back ${{ env.version }}.  # Provides a description of the pull request.
+           Bring Back $VERSION.  # Provides a description of the pull request.
         # This step uses the `peter-evans/create-pull-request` action to automate the creation of a pull request.
