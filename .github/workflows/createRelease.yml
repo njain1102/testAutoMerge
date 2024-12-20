@@ -23,6 +23,7 @@ jobs:
       - name: Extract Version
         id: version
         run: |
+          echo "${{ github.event.before }}"
           VERSION=$(git log -1 --pretty=%B | grep -oP '(?<=release/)[0-9]+\.[0-9]+\.[0-9]+')
           if [ -z "$VERSION" ]; then
             echo "Error: No version found in the last commit message."
