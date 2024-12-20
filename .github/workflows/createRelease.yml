@@ -47,9 +47,9 @@ jobs:
         run: |
           # Prepare What's Changed
           if [ $PREV_TAG != none ]; then
-            COMMITS=$(git log $PREV_TAG..HEAD --pretty=format:"- %s (by %an) in PR #%h")
+            COMMITS=$(git log $PREV_TAG..HEAD --pretty=format:"- %s (by %an)")
           else
-            COMMITS=$(git log --pretty=format:"- %s (by %an) in PR #%h")
+            COMMITS=$(git log --pretty=format:"- %s (by %an)")
           fi
 
           # Prepare Contributors
