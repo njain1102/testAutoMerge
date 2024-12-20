@@ -7,6 +7,7 @@ on:
 
 jobs:
   publish-release:
+    # if: startsWith(github.event.before, 'refs/heads/release/') 
     runs-on: ubuntu-latest
 
     steps:
@@ -22,12 +23,13 @@ jobs:
       - name: Extract Version
         id: version
         run: |
+          echo "${{ github.event.before }}"
           VERSION=$(git log -1 --pretty=%B | grep -oP '(?<=release/)[0-9]+\.[0-9]+\.[0-9]+')
           if [ -z "$VERSION" ]; then
             echo "Error: No version found in the last commit message."
             exit 1
           fi
-          echo "version=$VERSION" >> $GITHUB_ENV
+          echo "version=v$VERSION" >> $GITHUB_ENV
           echo "Extracted version: $VERSION"
 
       # Step 4: Determine the previous tag
@@ -40,27 +42,28 @@ jobs:
       # Step 5: Generate release notes
       - name: Generate Release Notes
         id: release_notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Prepare What's Changed
           if [ $PREV_TAG != none ]; then
-            echo "tag found"
-            COMMITS=$(git log $PREV_TAG..HEAD --pretty=format:"- %s (by %an) in PR #%h")
+            COMMITS=$(git log $PREV_TAG..HEAD --pretty=format:"- %s (by %an)")
           else
-            echo "tag not found"
-            COMMITS=$(git log --pretty=format:"- %s (by %an) in PR #%h")
+            COMMITS=$(git log --pretty=format:"- %s (by %an)")
           fi
 
           # Prepare Contributors
-          CONTRIBUTORS=$(git log $PREV_TAG..HEAD --pretty=format:"%an <%ae>" | sort | uniq)
-          if [ "$CONTRIBUTORS" == "none" ]; then
-            echo "no contributor found"
+          if [ $PREV_TAG != none ]; then
+            CONTRIBUTORS=$(git log $PREV_TAG..HEAD --pretty=format:"%an (%ae)" | sort | uniq)
+          else
+            CONTRIBUTORS=$(git log HEAD --pretty=format:"%an (%ae)" | sort | uniq)
           fi
 
           # Prepare Full Changelog Link
-          if [ "$PREV_TAG" != "none" ]; then
-            CHANGELOG="[Full Changelog](https://github.com/${{ github.repository }}/compare/$PREV_TAG...develop)"
+          if [ $PREV_TAG != none ]; then
+            CHANGELOG="[$PREV_TAG...${{ env.version }}](https://github.com/${{ github.repository }}/compare/$PREV_TAG...${{ env.version }})"
           else
-            CHANGELOG="[Full Changelog](https://github.com/${{ github.repository }}/commits/develop)"
+            CHANGELOG="[${{ env.version }}](https://github.com/${{ github.repository }}/commits/${{ env.version }})"
           fi
 
           # Save release notes
@@ -78,7 +81,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # GitHub API Token
         run: |
-          gh release create v${{ env.version }} \
-            --title "Release v${{ env.version }}" \
+          gh release create ${{ env.version }} \
+            --title "${{ env.version }}" \
             --notes-file release_notes.md \
             --target develop
