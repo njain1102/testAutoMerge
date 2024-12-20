@@ -42,7 +42,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}  # Uses the GitHub-provided token to authenticate the pull request action.
           base: staging  # Specifies the base branch for the pull request (the branch into which changes will be merged).
-          head: "adhoc/bring_back_${{ env.version }}"  # Specifies the source branch for the pull request (the newly created version branch).
+          branch: "adhoc/bring_back_${{ env.version }}"  # Specifies the source branch for the pull request (the newly created version branch).
           title: "Bring Back ${{ env.version }}"  # Sets the title of the pull request.
           body: |
            Bring Back ${{ env.version }}.  # Provides a description of the pull request.
