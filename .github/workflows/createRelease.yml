@@ -7,7 +7,7 @@ on:
 
 jobs:
   publish-release:
-    if: startsWith(github.event.before, 'refs/heads/release/') 
+    # if: startsWith(github.event.before, 'refs/heads/release/') 
     runs-on: ubuntu-latest
 
     steps:
