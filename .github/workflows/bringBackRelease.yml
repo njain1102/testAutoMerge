@@ -20,8 +20,9 @@ jobs:
       - name: Extract Version from Release Branch
         id: extract_version  # Assigns an ID to this step so its outputs can be referenced later.
         run: |
-          RELEASE_BRANCH=${{ github.event.before }}  # Gets the branch name that triggered the event.
-          VERSION=$(echo "${RELEASE_BRANCH}" | sed -n 's|refs/heads/release/||p')  # Extracts the version number from the release branch name by removing the 'refs/heads/release/' prefix.
+          echo "${{ github.event.before }}"  # Gets the branch name that triggered the event.
+          VERSION=$(git log -1 --pretty=%B | grep -oP '(?<=release/)[0-9]+\.[0-9]+\.[0-9]+')
+          # VERSION=$( | sed -n 's|refs/heads/release/||p')  # Extracts the version number from the release branch name by removing the 'refs/heads/release/' prefix.
           echo "Version: $VERSION"  # Prints the extracted version number for debugging purposes.
           echo "version=$VERSION" >> $GITHUB_ENV  # Exports the version as an environment variable for use in subsequent steps.
 
