@@ -33,8 +33,8 @@ jobs:
           git config user.email "njain2@tataunistore.com"  # Configures the Git email to identify the actions bot as the committer.
           git checkout develop  # Switches to the master branch.
           git pull  # Ensures the local master branch is up-to-date with the remote repository.
-          git checkout -b "adhoc/bring_back_$VERSION"  # Creates a new branch named version/<versionNumber> based on the master branch.
-          git push origin "adhoc/bring_back_$VERSION"  # Pushes the newly created branch to the remote repository.
+          git checkout -b "adhoc/bring_back_${{ env.version }}"  # Creates a new branch named version/<versionNumber> based on the master branch.
+          git push origin "adhoc/bring_back_${{ env.version }}"  # Pushes the newly created branch to the remote repository.
 
       # Step 4: Create Pull Request to staging branch
       - name: Create Pull Request
