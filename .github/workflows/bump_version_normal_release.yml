@@ -1,0 +1,58 @@
+name: Bump Version for normal release
+
+on: [workflow_dispatch]
+
+jobs:
+  bump_version_and_raise_PR:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        
+      - name: Fetch tags
+        run: |
+          git fetch --tags
+
+      - name: Get the latest tag in the format vX.XX.XX
+        run: |
+          LAST_RELEASE_TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
+          echo "last_release_tag=$LAST_RELEASE_TAG" >> $GITHUB_ENV
+        
+      - name: Get current latest released version 
+        run: |
+          VERSION=${LAST_RELEASE_TAG#v}
+          echo "version=$VERSION" >> $GITHUB_ENV
+
+      - name: Update the minor part version and create bumped version branch name
+        run: |
+          IFS='.' read -r major minor patch <<< "$VERSION"
+          # Increment the minor version
+          minor=$((minor + 1))
+          # Construct the new branch name
+          NEW_BRANCH="adhoc/${major}.${minor}.0"
+          echo "bumped_version=${major}.${minor}.0" >> $GITHUB_ENV
+          echo "new_branch=$NEW_BRANCH" >> $GITHUB_ENV
+      
+      - name: Create branch for bump version from develop branch
+        run: |
+          git checkout develop
+          git pull
+          git checkout -b "adhoc/bump_version_to_${{ env.new_branch }}"
+          git push origin "adhoc/bump_version_to_${{ env.new_branch }}"
+
+      - name: Create PR for the bumped version branch against develop
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -d @- https://api.github.com/repos/${{ github.repository }}/pulls <<EOF
+          {
+            "title": "Bump version to ${{ env.bumped_version }}",
+            "head": "adhoc/bump_version_to_${{ env.new_branch }}}",
+            "base": "develop",
+            "body": "Bump version to ${{ env.bumped_version }}"
+          }
+          EOF
+      
+  
