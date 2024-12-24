@@ -30,15 +30,17 @@ jobs:
           echo "major - ${major}, minor - ${minor}, patch - ${patch}"
           # Increment the minor version
           minor=$((minor + 1))
+          bumped_version=${major}.${minor}.0
           # Construct the new branch name
-          NEW_BRANCH="adhoc/${major}.${minor}.0"
-          echo "bumped_version=${major}.${minor}.0" >> $GITHUB_ENV
+          NEW_BRANCH="adhoc/bump_version_to_${bumped_version}"
+          
+          echo "bumped_version=${bumped_version}" >> $GITHUB_ENV
           echo "new_branch=${NEW_BRANCH}" >> $GITHUB_ENV
       
       - name: Create branch for bump version from develop branch
         run: |
-          git checkout -b "adhoc/bump_version_to_${{ env.new_branch }}"
-          git push origin "adhoc/bump_version_to_${{ env.new_branch }}"
+          git checkout -b ${{ env.new_branch }}
+          git push origin ${{ env.new_branch }}
 
       - name: Create PR for the bumped version branch against develop
         run: |
