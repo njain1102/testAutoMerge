@@ -21,16 +21,6 @@ jobs:
         
       - name: Get current latest released version 
         run: |
-          if [[ ${last_release_tag} == v* ]]; then
-            echo "last release tag starts with v of shell, ${last_release_tag}, ${{ env.last_release_tag }}"
-          else
-            echo "phas gye re of shell, ${last_release_tag}, ${{ env.last_release_tag }}"
-          fi
-          if [[ ${{ env.last_release_tag }} == v* ]]; then
-            echo "last release tag starts with v, ${last_release_tag}, ${{ env.last_release_tag }}"
-          else
-            echo "phas gye re, ${last_release_tag}, ${{ env.last_release_tag }}"
-          fi
           VERSION=$(echo "${last_release_tag}" | grep -oP '(?<=v)[0-9]+\.[0-9]+\.[0-9]+')
           echo "version=$VERSION" >> $GITHUB_ENV
 
@@ -42,7 +32,7 @@ jobs:
           # Construct the new branch name
           NEW_BRANCH="adhoc/${major}.${minor}.0"
           echo "bumped_version=${major}.${minor}.0" >> $GITHUB_ENV
-          echo "new_branch=$NEW_BRANCH" >> $GITHUB_ENV
+          echo "new_branch=${NEW_BRANCH}" >> $GITHUB_ENV
       
       - name: Create branch for bump version from develop branch
         run: |
