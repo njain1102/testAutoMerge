@@ -3,10 +3,11 @@ name: Bump Version for releases
 on:
   workflow_dispatch:
     inputs:
-      type:
+      envo:
         description: 'Select type for bumping version'
         required: true
         default: 'normal'
+        type: choice
         options:
           - 'normal'
           - 'hotfix'
@@ -36,7 +37,7 @@ jobs:
       - name: Update the minor part version and create bumped version branch name
         run: |
           IFS='.' read -r major minor patch <<< "${{ env.version }}"
-          if [[ "${{ github.event.inputs.type }}" == "hotfix" ]]; then
+          if [[ "${{ github.event.inputs.envo }}" == "hotfix" ]]; then
             echo "hotfix release"
           else
             echo "normal release"
