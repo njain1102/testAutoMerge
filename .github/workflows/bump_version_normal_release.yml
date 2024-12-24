@@ -6,11 +6,11 @@ on:
       bump_version_type:
         description: 'Select type for bumping version'
         required: true
-        default: 'normal'
+        default: 'Normal Release'
         type: choice
         options:
-          - 'normal'
-          - 'hotfix'
+          - 'Normal Release'
+          - 'Hotfix Release'
 
 jobs:
   bump_version_and_raise_PR:
@@ -37,7 +37,7 @@ jobs:
       - name: Update the minor part version and create bumped version branch name
         run: |
           IFS='.' read -r major minor patch <<< "${{ env.version }}"
-          if [[ "${{ github.event.inputs.bump_version_type }}" == "hotfix" ]]; then
+          if [[ "${{ github.event.inputs.bump_version_type }}" == "Hotfix Release" ]]; then
             patch=$((patch + 1))
             bumped_version=${major}.${minor}.${patch}
           else
@@ -49,7 +49,7 @@ jobs:
           echo "new_branch=${NEW_BRANCH}" >> $GITHUB_ENV
       
       - name: Create branch for bump version from develop branch
-        if: ${{ github.event.inputs.bump_version_type == 'normal' }}
+        if: ${{ github.event.inputs.bump_version_type == 'Normal Release' }}
         run: |
           git checkout develop
           git pull
@@ -61,7 +61,7 @@ jobs:
           echo "base_branch=develop" >> $GITHUB_ENV
 
       - name: Create branch for bump version from master branch
-        if: ${{ github.event.inputs.bump_version_type == 'hotfix' }}
+        if: ${{ github.event.inputs.bump_version_type == 'Hotfix Release' }}
         run: |
           git checkout master
           git pull
