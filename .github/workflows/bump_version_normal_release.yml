@@ -16,15 +16,20 @@ jobs:
 
       - name: Get the latest tag in the format vX.XX.XX
         run: |
-          LAST_RELEASE_TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
-          echo "last_release_tag=$LAST_RELEASE_TAG" >> $GITHUB_ENV
+          last_release_tag=$(git describe --tags $(git rev-list --tags --max-count=1))
+          echo "last_release_tag=$last_release_tag" >> $GITHUB_ENV
         
       - name: Get current latest released version 
         run: |
-          if [[ $LAST_RELEASE_TAG == v* ]]; then
-            echo "last release tag starts with v, ${LAST_RELEASE_TAG}"
+          if [[ ${last_release_tag} == v* ]]; then
+            echo "last release tag starts with v of shell, ${last_release_tag}, ${{ env.last_release_tag }}"
           else
-            echo "phas gye re, ${LAST_RELEASE_TAG}"
+            echo "phas gye re of shell, ${last_release_tag}, ${{ env.last_release_tag }}"
+          fi
+          if [[ ${{ env.last_release_tag }} == v* ]]; then
+            echo "last release tag starts with v, ${last_release_tag}, ${{ env.last_release_tag }}"
+          else
+            echo "phas gye re, ${last_release_tag}, ${{ env.last_release_tag }}"
           fi
           VERSION=$(echo "$LAST_RELEASE_TAG" | grep -oP '(?<=v)[0-9]+\.[0-9]+\.[0-9]+')
           echo "version=$VERSION" >> $GITHUB_ENV
