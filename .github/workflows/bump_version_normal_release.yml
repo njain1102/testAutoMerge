@@ -27,6 +27,7 @@ jobs:
       - name: Update the minor part version and create bumped version branch name
         run: |
           IFS='.' read -r major minor patch <<< "$VERSION"
+          echo "major - ${major}, minor - ${minor}, patch - ${patch}"
           # Increment the minor version
           minor=$((minor + 1))
           # Construct the new branch name
