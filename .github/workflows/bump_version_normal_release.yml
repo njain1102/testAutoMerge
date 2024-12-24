@@ -82,7 +82,7 @@ jobs:
             -d @- https://api.github.com/repos/${{ github.repository }}/pulls <<EOF
           {
             "title": "Bump version to ${{ env.bumped_version }}",
-            "head": "adhoc/bump_version_to_${{ env.new_branch }}",
+            "head": "${{ env.new_branch }}",
             "base": "${{ env.base_branch }}",
             "body": "Bump version to ${{ env.bumped_version }}"
           }
