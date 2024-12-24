@@ -51,6 +51,7 @@ jobs:
       - name: Setup developer details
         run: |
           git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
       
       - name: Create branch for bump version from develop branch
         if: ${{ github.event.inputs.bump_version_type == 'Normal Release' }}
