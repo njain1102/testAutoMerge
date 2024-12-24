@@ -54,6 +54,9 @@ jobs:
           git checkout develop
           git pull
           git checkout -b ${{ env.new_branch }}
+          echo "This is a new file created via GitHub Actions" > newfile.txt
+          git add .
+          git commit -m "[enable ci]"
           git push origin ${{ env.new_branch }}
           echo "base_branch=develop" >> $GITHUB_ENV
 
