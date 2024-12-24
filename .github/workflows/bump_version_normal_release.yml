@@ -39,10 +39,11 @@ jobs:
           IFS='.' read -r major minor patch <<< "${{ env.version }}"
           if [[ "${{ github.event.inputs.bump_version_type }}" == "hotfix" ]]; then
             patch=$((patch + 1))
+            bumped_version=${major}.${minor}.${patch}
           else
             minor=$((minor + 1))
+            bumped_version=${major}.${minor}.0
           fi
-          bumped_version=${major}.${minor}.${patch}
           NEW_BRANCH="adhoc/bump_version_to_${bumped_version}"
           echo "bumped_version=${bumped_version}" >> $GITHUB_ENV
           echo "new_branch=${NEW_BRANCH}" >> $GITHUB_ENV
@@ -65,7 +66,7 @@ jobs:
           git push origin ${{ env.new_branch }}
           echo "base_branch=production" >> $GITHUB_ENV
 
-      - name: Create PR for the bumped version branch against develop
+      - name: Create PR for the bumped version branch against "${{ env.base_branch }}"
         run: |
           curl -X POST \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
@@ -74,7 +75,7 @@ jobs:
           {
             "title": "Bump version to ${{ env.bumped_version }}",
             "head": "adhoc/bump_version_to_${{ env.new_branch }}}",
-            "base": "{{ env.base_branch }}",
+            "base": "${{ env.base_branch }}",
             "body": "Bump version to ${{ env.bumped_version }}"
           }
           EOF
