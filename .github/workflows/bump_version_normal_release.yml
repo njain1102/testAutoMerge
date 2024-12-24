@@ -31,7 +31,7 @@ jobs:
           else
             echo "phas gye re, ${last_release_tag}, ${{ env.last_release_tag }}"
           fi
-          VERSION=$(echo "$LAST_RELEASE_TAG" | grep -oP '(?<=v)[0-9]+\.[0-9]+\.[0-9]+')
+          VERSION=$(echo "${last_release_tag}" | grep -oP '(?<=v)[0-9]+\.[0-9]+\.[0-9]+')
           echo "version=$VERSION" >> $GITHUB_ENV
 
       - name: Update the minor part version and create bumped version branch name
