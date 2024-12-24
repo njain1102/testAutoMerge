@@ -26,7 +26,7 @@ jobs:
 
       - name: Update the minor part version and create bumped version branch name
         run: |
-          IFS='.' read -r major minor patch <<< "${VERSION}"
+          IFS='.' read -r major minor patch <<< "${{ env.version }}"
           echo "major - ${major}, minor - ${minor}, patch - ${patch}"
           # Increment the minor version
           minor=$((minor + 1))
