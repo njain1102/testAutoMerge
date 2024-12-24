@@ -3,7 +3,7 @@ name: Bump Version for releases
 on:
   workflow_dispatch:
     inputs:
-      envo:
+      bump_version_type:
         description: 'Select type for bumping version'
         required: true
         default: 'normal'
@@ -37,21 +37,33 @@ jobs:
       - name: Update the minor part version and create bumped version branch name
         run: |
           IFS='.' read -r major minor patch <<< "${{ env.version }}"
-          if [[ "${{ github.event.inputs.envo }}" == "hotfix" ]]; then
-            echo "hotfix release"
+          if [[ "${{ github.event.inputs.bump_version_type }}" == "hotfix" ]]; then
+            patch=$((patch + 1))
           else
-            echo "normal release"
+            minor=$((minor + 1))
           fi
-          minor=$((minor + 1))
-          bumped_version=${major}.${minor}.0
+          bumped_version=${major}.${minor}.${patch}
           NEW_BRANCH="adhoc/bump_version_to_${bumped_version}"
           echo "bumped_version=${bumped_version}" >> $GITHUB_ENV
           echo "new_branch=${NEW_BRANCH}" >> $GITHUB_ENV
       
       - name: Create branch for bump version from develop branch
+        if: ${{ github.event.inputs.bump_version_type == 'normal' }}
         run: |
+          git checkout develop
+          git pull
           git checkout -b ${{ env.new_branch }}
           git push origin ${{ env.new_branch }}
+          echo "base_branch=develop" >> $GITHUB_ENV
+
+      - name: Create branch for bump version from master branch
+        if: ${{ github.event.inputs.bump_version_type == 'hotfix' }}
+        run: |
+          git checkout master
+          git pull
+          git checkout -b ${{ env.new_branch }}
+          git push origin ${{ env.new_branch }}
+          echo "base_branch=production" >> $GITHUB_ENV
 
       - name: Create PR for the bumped version branch against develop
         run: |
@@ -62,7 +74,7 @@ jobs:
           {
             "title": "Bump version to ${{ env.bumped_version }}",
             "head": "adhoc/bump_version_to_${{ env.new_branch }}}",
-            "base": "develop",
+            "base": "{{ env.base_branch }}",
             "body": "Bump version to ${{ env.bumped_version }}"
           }
           EOF
