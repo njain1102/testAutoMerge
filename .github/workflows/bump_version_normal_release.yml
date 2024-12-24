@@ -21,7 +21,12 @@ jobs:
         
       - name: Get current latest released version 
         run: |
-          VERSION=$(echo "$LAST_RELEASE_TAG" | grep -oP '(?<=^v)[0-9]+\.[0-9]+\.[0-9]+')
+          if [[ $LAST_RELEASE_TAG == v* ]]; then
+            echo "last release tag starts with v"
+          else
+            echo "phas gye re"
+          fi
+          VERSION=$(echo "$LAST_RELEASE_TAG" | grep -oP '(?<=v)[0-9]+\.[0-9]+\.[0-9]+')
           echo "version=$VERSION" >> $GITHUB_ENV
 
       - name: Update the minor part version and create bumped version branch name
