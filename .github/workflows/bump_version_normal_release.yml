@@ -21,7 +21,7 @@ jobs:
         
       - name: Get current latest released version 
         run: |
-          VERSION=$(echo "$LAST_RELEASE_TAG" | grep -oP '(?<=^v)\d+\.\d+\.\d+')
+          VERSION=$(echo "$LAST_RELEASE_TAG" | grep -oP '(?<=^v)[0-9]+\.[0-9]+\.[0-9]+')
           echo "version=$VERSION" >> $GITHUB_ENV
 
       - name: Update the minor part version and create bumped version branch name
@@ -36,8 +36,6 @@ jobs:
       
       - name: Create branch for bump version from develop branch
         run: |
-          git checkout develop
-          git pull
           git checkout -b "adhoc/bump_version_to_${{ env.new_branch }}"
           git push origin "adhoc/bump_version_to_${{ env.new_branch }}"
 
