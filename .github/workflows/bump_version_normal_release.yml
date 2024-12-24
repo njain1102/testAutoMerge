@@ -1,6 +1,15 @@
-name: Bump Version for normal release
+name: Bump Version for releases
 
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
+    inputs:
+      bump_version_type:
+        description: 'Select type for bumping version'
+        required: true
+        default: 'normal'
+        options:
+          - 'normal'
+          - 'hotfix'
 
 jobs:
   bump_version_and_raise_PR:
@@ -27,6 +36,11 @@ jobs:
       - name: Update the minor part version and create bumped version branch name
         run: |
           IFS='.' read -r major minor patch <<< "${{ env.version }}"
+          if [[ "${{ github.event.inputs.bump_version_type }}" == "hotfix" ]]; then
+            echo "hotfix release"
+          else
+            echo "normal release"
+          fi
           minor=$((minor + 1))
           bumped_version=${major}.${minor}.0
           NEW_BRANCH="adhoc/bump_version_to_${bumped_version}"
