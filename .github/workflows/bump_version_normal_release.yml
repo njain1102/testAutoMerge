@@ -31,7 +31,9 @@ jobs:
         
       - name: Get current latest released version 
         run: |
-          VERSION=$(echo "${last_release_tag}" | grep -oP '(?<=v)[0-9]+\.[0-9]+\.[0-9]+')
+          # VERSION=$(echo "${last_release_tag}" | grep -oP '(?<=v)[0-9]+\.[0-9]+\.[0-9]+')
+          VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" EggTimer/Info.plist)
+          echo "Extracted version: $VERSION"
           echo "version=${VERSION}" >> $GITHUB_ENV
 
       - name: Update the minor part version and create bumped version branch name
