@@ -8,7 +8,7 @@ on:
 jobs:
   create-branch:
     # if: startsWith(github.event.before, 'refs/heads/release/')  # Run this job only if the branch that triggered the event was a release/** branch.
-    runs-on: ubuntu-latest  # Use the latest available Ubuntu runner for the job.
+    runs-on: macos-latest  # Use the latest available Ubuntu runner for the job.
 
     steps:
       # Step 1: Checkout the repository
