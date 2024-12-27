@@ -6,15 +6,15 @@ on:
       bump_version_type:
         description: 'Select type for bumping version'
         required: true
-        default: 'normal'
+        default: 'Normal Release'
         type: choice
         options:
-          - 'normal'
-          - 'hotfix'
+          - 'Normal Release'
+          - 'Hotfix Release'
 
 jobs:
   bump_version_and_raise_PR:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: Checkout Repository
@@ -31,41 +31,55 @@ jobs:
         
       - name: Get current latest released version 
         run: |
-          VERSION=$(echo "${last_release_tag}" | grep -oP '(?<=v)[0-9]+\.[0-9]+\.[0-9]+')
+          # VERSION=$(echo "${last_release_tag}" | grep -oP '(?<=v)[0-9]+\.[0-9]+\.[0-9]+')
+          VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" EggTimer/Info.plist)
+          echo "Extracted version: $VERSION"
           echo "version=${VERSION}" >> $GITHUB_ENV
 
       - name: Update the minor part version and create bumped version branch name
         run: |
           IFS='.' read -r major minor patch <<< "${{ env.version }}"
-          if [[ "${{ github.event.inputs.bump_version_type }}" == "hotfix" ]]; then
+          if [[ "${{ github.event.inputs.bump_version_type }}" == "Hotfix Release" ]]; then
             patch=$((patch + 1))
+            bumped_version=${major}.${minor}.${patch}
+            echo "base_branch=production" >> $GITHUB_ENV
           else
             minor=$((minor + 1))
+            bumped_version=${major}.${minor}.0
+            echo "base_branch=develop" >> $GITHUB_ENV
           fi
-          bumped_version=${major}.${minor}.${patch}
           NEW_BRANCH="adhoc/bump_version_to_${bumped_version}"
           echo "bumped_version=${bumped_version}" >> $GITHUB_ENV
           echo "new_branch=${NEW_BRANCH}" >> $GITHUB_ENV
+
+      - name: Setup developer details
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"    
       
       - name: Create branch for bump version from develop branch
-        if: ${{ github.event.inputs.bump_version_type == 'normal' }}
+        if: ${{ github.event.inputs.bump_version_type == 'Normal Release' }}
         run: |
-          git checkout develop
+          git checkout ${{ env.base_branch }}
           git pull
           git checkout -b ${{ env.new_branch }}
+          echo "This is a new file created via GitHub Actions" > newfile.txt
+          git add .
+          git commit -m "[enable ci]"
           git push origin ${{ env.new_branch }}
-          echo "base_branch=develop" >> $GITHUB_ENV
 
       - name: Create branch for bump version from master branch
-        if: ${{ github.event.inputs.bump_version_type == 'hotfix' }}
+        if: ${{ github.event.inputs.bump_version_type == 'Hotfix Release' }}
         run: |
-          git checkout master
+          git checkout ${{ env.base_branch }}
           git pull
           git checkout -b ${{ env.new_branch }}
+          echo "This is a new file created via GitHub Actions" > newfile.txt
+          git add .
+          git commit -m "[enable ci]"
           git push origin ${{ env.new_branch }}
-          echo "base_branch=production" >> $GITHUB_ENV
 
-      - name: Create PR for the bumped version branch against develop
+      - name: Create PR for the bumped version branch against ${{ env.base_branch }}
         run: |
           curl -X POST \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
@@ -73,8 +87,8 @@ jobs:
             -d @- https://api.github.com/repos/${{ github.repository }}/pulls <<EOF
           {
             "title": "Bump version to ${{ env.bumped_version }}",
-            "head": "adhoc/bump_version_to_${{ env.new_branch }}}",
-            "base": "{{ env.base_branch }}",
+            "head": "${{ env.new_branch }}",
+            "base": "${{ env.base_branch }}",
             "body": "Bump version to ${{ env.bumped_version }}"
           }
           EOF
