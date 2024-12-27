@@ -14,7 +14,7 @@ on:
 
 jobs:
   bump_version_and_raise_PR:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: Checkout Repository
