@@ -26,6 +26,7 @@ jobs:
         
       - name: Get current latest released version 
         run: |
+          echo "Branch name: ${{ github.event.inputs.branch }}"
           VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" EggTimer/Info.plist)
           echo "Extracted version: $VERSION"
           echo "version=${VERSION}" >> $GITHUB_ENV
