@@ -1,42 +1,36 @@
-name: Create Version Branch on Merge
+name: Bring Back release PR
 
 on:
   push:
     branches:
-      - develop  # The workflow triggers whenever there is a push event to the master branch.
+      - develop
 
 jobs:
   create-branch:
     # if: startsWith(github.event.before, 'refs/heads/release/')  # Run this job only if the branch that triggered the event was a release/** branch.
-    runs-on: macos-latest  # Use the latest available Ubuntu runner for the job.
+    runs-on: macos-latest
 
     steps:
-      # Step 1: Checkout the repository
       - name: Checkout Repository
         uses: actions/checkout@v3
-        # This action checks out the repository's code so the workflow can work with the repository content.
 
-      # Step 2: Extract version from the release branch
       - name: Extract Version from Release Branch
-        id: extract_version  # Assigns an ID to this step so its outputs can be referenced later.
+        id: extract_version
         run: |
-          echo "${{ github.event.before }}"  # Gets the branch name that triggered the event.
-          VERSION=$(git log -1 --pretty=%B | grep -oP '(?<=release/)[0-9]+\.[0-9]+\.[0-9]+')
-          # VERSION=$( | sed -n 's|refs/heads/release/||p')  # Extracts the version number from the release branch name by removing the 'refs/heads/release/' prefix.
-          echo "Version: $VERSION"  # Prints the extracted version number for debugging purposes.
-          echo "version=$VERSION" >> $GITHUB_ENV  # Exports the version as an environment variable for use in subsequent steps.
+          VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" EggTimer/Info.plist)
+          echo "Version: $VERSION" 
+          echo "version=$VERSION" >> $GITHUB_ENV
 
-      # Step 3: Create a new branch from master
+      - name: Setup developer details
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"    
+    
       - name: Create New Version Branch
         run: |
-          git config user.name "namanjain-tul-luxury"  # Configures the Git username to identify the actions bot as the committer.
-          git config user.email "njain2@tataunistore.com"  # Configures the Git email to identify the actions bot as the committer.
-          git checkout develop  # Switches to the master branch.
-          git pull  # Ensures the local master branch is up-to-date with the remote repository.
-          git checkout -b "adhoc/bring_back_${{ env.version }}"  # Creates a new branch named version/<versionNumber> based on the master branch.
-          git push origin "adhoc/bring_back_${{ env.version }}"  # Pushes the newly created branch to the remote repository.
+          git checkout -b "adhoc/bring_back_${{ env.version }}" 
+          git push origin "adhoc/bring_back_${{ env.version }}"
 
-      # Step 4: Create a PR to the staging branch using GitHub API
       - name: Create pull request to staging branch
         run: |
           curl -X POST \
@@ -50,15 +44,3 @@ jobs:
             "body": "This PR is automatically created from the release branch ${{ github.ref }}."
           }
           EOF
-
-      # # Step 4: Create Pull Request to staging branch
-      # - name: Create Pull Request
-      #   uses: peter-evans/create-pull-request@v5
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}  # Uses the GitHub-provided token to authenticate the pull request action.
-      #     base: staging  # Specifies the base branch for the pull request (the branch into which changes will be merged).
-      #     branch: "adhoc/bring_back_${{ env.version }}"  # Specifies the source branch for the pull request (the newly created version branch).
-      #     title: "Bring Back ${{ env.version }}"  # Sets the title of the pull request.
-      #     body: |
-      #      Bring Back ${{ env.version }}.  # Provides a description of the pull request.
-        # This step uses the `peter-evans/create-pull-request` action to automate the creation of a pull request.
