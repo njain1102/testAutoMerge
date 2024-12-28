@@ -24,32 +24,28 @@ jobs:
         run: |
           git fetch --tags
         
-      - name: Get current latest released version 
+      - name: Get latest released version 
         run: |
-          # BRANCH_NAME_SEL=$(echo "${{ github.ref }}" | grep -o 'refs/heads/.*')
-          # echo "Branch name: ${BRANCH_NAME_SEL}"
-          FULL_REF="${{ github.ref }}"
-          BRANCH_NAME=${FULL_REF#refs/heads/}
-          echo "Branch name: ${BRANCH_NAME}"
           VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" EggTimer/Info.plist)
           echo "Extracted version: $VERSION"
           echo "version=${VERSION}" >> $GITHUB_ENV
 
-      - name: Update the minor part version and create bumped version branch name
+      - name: Update the minor/patch part version and create bumped version branch name
         run: |
           IFS='.' read -r major minor patch <<< "${{ env.version }}"
           if [[ "${{ github.event.inputs.bump_version_type }}" == "Hotfix Release" ]]; then
             patch=$((patch + 1))
             bumped_version=${major}.${minor}.${patch}
-            echo "base_branch=production" >> $GITHUB_ENV
             echo "patch=true" >> $GITHUB_ENV
           else
             minor=$((minor + 1))
             bumped_version=${major}.${minor}.0
-            echo "base_branch=develop" >> $GITHUB_ENV
             echo "patch=false" >> $GITHUB_ENV
           fi
+          BASE_BRANCH_REF="${{ github.ref }}"
+          BASE_BRANCH_NAME=${BASE_BRANCH_REF#refs/heads/}
           NEW_BRANCH="adhoc/bump_version_to_${bumped_version}"
+          echo "base_branch=${BASE_BRANCH_NAME}" >> $GITHUB_ENV
           echo "bumped_version=${bumped_version}" >> $GITHUB_ENV
           echo "new_branch=${NEW_BRANCH}" >> $GITHUB_ENV
 
