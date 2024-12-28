@@ -26,8 +26,11 @@ jobs:
         
       - name: Get current latest released version 
         run: |
-          BRANCH_NAME_SEL=$(echo "${{ github.ref }}" | grep -o 'refs/heads/.*')
-          echo "Branch name: ${BRANCH_NAME_SEL}"
+          # BRANCH_NAME_SEL=$(echo "${{ github.ref }}" | grep -o 'refs/heads/.*')
+          # echo "Branch name: ${BRANCH_NAME_SEL}"
+          FULL_REF="${{ github.ref }}"
+          BRANCH_NAME=${FULL_REF#refs/heads/}
+          echo "Branch name: ${BRANCH_NAME}"
           VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" EggTimer/Info.plist)
           echo "Extracted version: $VERSION"
           echo "version=${VERSION}" >> $GITHUB_ENV
