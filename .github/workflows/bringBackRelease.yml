@@ -24,8 +24,8 @@ jobs:
 
       - name: Setup developer details
         run: |
-          git config --global user.name "${{ github.actor }}"
-          git config --global user.email "${{ github.actor }}@users.noreply.github.com"    
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
     
       - name: Create New Version Branch
         run: |
@@ -41,7 +41,7 @@ jobs:
             -d @- https://api.github.com/repos/${{ github.repository }}/pulls <<EOF
           {
             "title": "Release version ${{ env.VERSION }} to staging",
-            "head": ${NEW_BRANCH},
+            "head": "adhoc/bring_back_release_${{ env.version }}",
             "base": "staging",
             "body": "This PR is automatically created from the release branch ${{ github.ref }}."
           }
