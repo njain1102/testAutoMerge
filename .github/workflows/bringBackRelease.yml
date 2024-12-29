@@ -7,7 +7,7 @@ on:
 
 jobs:
   create-branch:
-    # if: startsWith(github.event.before, 'refs/heads/release/')  # Run this job only if the branch that triggered the event was a release/** branch.
+    if: contains(git log -1 --pretty=%B, 'Release')  # Run this job only if the branch that triggered the event was a release/** branch.
     runs-on: macos-latest
 
     steps:
@@ -17,7 +17,6 @@ jobs:
       - name: Extract Version from Release Branch
         id: extract_version
         run: |
-          echo "Event before: ${{ github.event.before }}"
           VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" EggTimer/Info.plist)
           echo "Version: $VERSION" 
           echo "version=$VERSION" >> $GITHUB_ENV
